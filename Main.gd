@@ -25,7 +25,7 @@ var player = {
 	direction = Vector2(cos(0), sin(0))
 }
 const indicator_length = 32
-const move_speed = 20
+const move_speed = 3
 const turn_speed = 3
 
 
@@ -36,6 +36,10 @@ func _process(delta):
 	if Input.is_action_pressed("ui_right"):
 		player.angle += turn_speed * delta
 		player.direction = Vector2(cos(player.angle), sin(player.angle))
+	if Input.is_action_pressed("ui_up"):
+		player.position += player.direction * move_speed * delta
+	if Input.is_action_pressed("ui_down"):
+		player.position -= player.direction * move_speed * delta
 	update();
 
 
@@ -48,7 +52,7 @@ func _draw():
 			var size = Vector2(cell_size-1, cell_size-1)
 			draw_rect(Rect2(position, size), color)
 	
-	### Player
+	### PLAYER
 	# Player body
 	var position = player.position*cell_size+Vector2(1, 1)
 	draw_rect(Rect2(position, player.size), GREEN)
