@@ -21,8 +21,8 @@ const cell_size = 64
 var player = {
 	size = Vector2(8, 8),
 	position = Vector2(1, 1),
-	angle = 0,
-	direction = Vector2(cos(0), sin(0))
+	angle = PI/4,
+	direction = Vector2(cos(PI/4), sin(PI/4))
 }
 const indicator_length = 32
 const move_speed = 3
@@ -32,9 +32,13 @@ const turn_speed = 3
 func _process(delta):
 	if Input.is_action_pressed("ui_left"):
 		player.angle -= turn_speed * delta
-		player.direction = Vector2(cos(player.angle), sin(player.angle))
+	if (player.angle < 0):
+		player.angle += 2*PI
+	player.direction = Vector2(cos(player.angle), sin(player.angle))
 	if Input.is_action_pressed("ui_right"):
 		player.angle += turn_speed * delta
+		if (player.angle > 2*PI):
+			player.angle -= 2*PI
 		player.direction = Vector2(cos(player.angle), sin(player.angle))
 	if Input.is_action_pressed("ui_up"):
 		player.position += player.direction * move_speed * delta
@@ -58,19 +62,24 @@ func _draw():
 	draw_rect(Rect2(position, player.size), GREEN)
 	
 	# Direction indicator
-	var from = position+player.size/2
-	var to = from+player.direction*indicator_length
-	draw_line(from, to, YELLOW)
+	var from_player = position+player.size/2
+	var to = from_player+player.direction*indicator_length
+	draw_line(from_player, to, YELLOW)
 	
-	# FOV indicator
-	var f_theta = player.angle - PI/6
-	var f_direction = Vector2(cos(f_theta), sin(f_theta))
-	to = from+f_direction*indicator_length*2
-	draw_line(from, to, RED)
+	### RAYS
+	var ray = {
+		angle = player.angle,
+		from = Vector2(from_player.x, from_player.y),
+		to = Vector2(from_player.x, from_player.y)
+	}
+	var ncotan = -1/tan(ray.angle)
 	
-	f_theta = player.angle + PI/6
-	f_direction = Vector2(cos(f_theta), sin(f_theta))
-	to = from+f_direction*indicator_length*2
-	draw_line(from, to, RED)
-	
+	# Horizontal Grid Lines
+	if ray.angle > PI:
+		ray.to.y = (int(ray.from.y)/64)*64
+		ray.to.x = ncotan*(ray.from.y-ray.to.y)+ray.from.x
+	if ray.angle < PI:
+		ray.to.y = ((int(ray.from.y)/64)*64)+64
+		ray.to.x = ncotan*(ray.from.y-ray.to.y)+ray.from.x
+	draw_line(ray.from, ray.to, RED)
 	
